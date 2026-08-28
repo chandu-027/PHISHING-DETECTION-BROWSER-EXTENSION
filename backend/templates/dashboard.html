@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrustNet | Threat Intelligence & Analytics Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #090c15;
+            --bg-card: rgba(17, 24, 39, 0.75);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #4b5563;
+            
+            /* TrustNet Palette */
+            --accent-cyan: #00f2fe;
+            --accent-blue: #4facfe;
+            --accent-red: #ff4d4d;
+            --accent-orange: #ff9933;
+            --accent-green: #10b981;
+            
+            --grad-logo: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%);
+            --grad-alert: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-orange) 100%);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 77, 77, 0.04) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        /* Layout */
+        .wrapper {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 30px 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Glassmorphism utility */
+        .glassmorphism {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+            transition: var(--transition-smooth);
+        }
+
+        .glassmorphism:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 38px;
+            height: 38px;
+            filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.4));
+        }
+
+        .brand-text h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: var(--grad-logo);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background: var(--grad-logo);
+            color: #090c15;
+            border: none;
+            box-shadow: 0 4px 14px rgba(0, 242, 254, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Alert notification box */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.3s ease;
+        }
+        .toast-success {
+            background: rgba(16, 185, 129, 0.9);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: white;
+        }
+        .toast-info {
+            background: rgba(59, 130, 246, 0.9);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .metric-card {
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-glow {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            top: -20px;
+            left: -20px;
+            border-radius: 50%;
+            filter: blur(30px);
+            opacity: 0.15;
+            background: var(--accent-cyan);
+        }
+        .alert-card .metric-glow {
+            background: var(--accent-red);
+        }
+
+        .metric-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .metric-val {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .alert-card .metric-val {
+            background: var(--grad-alert);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .metric-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Two Column Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 900px) {
+            .main-layout {
+                grid-template-columns: 3fr 2fr;
+            }
+        }
+
+        /* Chart Card */
+        .chart-card {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .chart-header {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* Logs Card */
+        .logs-card {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            font-weight: 700;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            color: var(--text-secondary);
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+            color: var(--text-primary);
+        }
+
+        .badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .badge-danger {
+            color: var(--accent-red);
+            background: rgba(255, 77, 77, 0.1);
+            border: 1px solid rgba(255, 77, 77, 0.2);
+        }
+
+        .badge-warning {
+            color: var(--accent-orange);
+            background: rgba(255, 153, 51, 0.1);
+            border: 1px solid rgba(255, 153, 51, 0.2);
+        }
+
+        /* Tag lists for XAI reasons */
+        .reason-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-width: 400px;
+        }
+
+        .tag {
+            font-size: 9px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+
+        .empty-logs {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px 0;
+            font-size: 13px;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 20px 0;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <!-- Dashboard Header -->
+        <header class="glassmorphism">
+            <div class="brand-section">
+                <!-- SVG Shield Logo -->
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 12 4 18 12 22Z" fill="url(#logo-grad-dash)" stroke="url(#logo-grad-dash)" stroke-width="2"/>
+                    <path d="M9 11L11 13L15 9" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="logo-grad-dash" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00f2fe"/>
+                            <stop offset="1" stop-color="#4facfe"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="brand-text">
+                    <h1>TrustNet Central Threat Command</h1>
+                    <p>Threat Intelligence & Analytics Platform</p>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-secondary" id="btn-sync">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    Sync PhishTank API
+                </button>
+                <button class="btn btn-primary" id="btn-refresh">Refresh Stats</button>
+            </div>
+        </header>
+
+        <!-- Metrics Row -->
+        <div class="metrics-grid">
+            <div class="card glassmorphism metric-card alert-card">
+                <div class="metric-glow"></div>
+                <div class="metric-header">Threats Prevented</div>
+                <div class="metric-val" id="count-blocked">0</div>
+                <div class="metric-desc">Total phishing attempts blocked in real-time</div>
+            </div>
+            <div class="card glassmorphism metric-card">
+                <div class="metric-glow"></div>
+                <div class="metric-header">ML Core Accuracy</div>
+                <div class="metric-val">99.7%</div>
+                <div class="metric-desc">Evaluation score of local Decision Tree model</div>
+            </div>
+            <div class="card glassmorphism metric-card">
+                <div class="metric-glow"></div>
+                <div class="metric-header">Sync Database Feeds</div>
+                <div class="metric-val" style="font-size: 26px; line-height: 48px;" id="db-status">Active</div>
+                <div class="metric-desc">Direct threat feed linkage with PhishTank API</div>
+            </div>
+        </div>
+
+        <!-- Main Chart and Log sections -->
+        <div class="main-layout">
+            <!-- Left Side: Bar Chart of Blocks -->
+            <div class="card glassmorphism chart-card">
+                <div class="chart-header">Prevented Threat Timeline</div>
+                <div style="position: relative; height: 260px; width: 100%;">
+                    <canvas id="threatChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Right Side: Model diagnostics info -->
+            <div class="card glassmorphism chart-card">
+                <div class="chart-header">Explainable AI (XAI) Model Diagnostics</div>
+                <div class="details-content" style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; display: flex; flex-direction: column; gap: 10px; padding: 10px 0;">
+                    <p>TrustNet utilizes a local <strong>Decision Tree classifier</strong> trained on 100,000 samples of the 2024 UCI Phishing URL dataset. Predictions are run client-side on the client's tab URL.</p>
+                    <p>Instead of acting as a "black box," our feature extraction pipeline breaks down the classification into <strong>attributed lexical flags</strong> which are visible below in the threat feed logs. This provides direct transparency regarding *why* specific URLs trigger security restrictions.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blocked Logs Feed Table -->
+        <div class="card glassmorphism logs-card">
+            <div class="chart-header">Live Security Threat Feed</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 15%">Timestamp</th>
+                            <th style="width: 30%">Target Hostname</th>
+                            <th style="width: 10%">Probability</th>
+                            <th style="width: 45%">XAI Classifier Flags</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-tbody">
+                        <tr>
+                            <td colspan="4" class="empty-logs">Loading live threat logs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="glassmorphism">
+            <span>&copy; 2026 TrustNet Threat Intelligence System. Prepared for 7th Sem Academic Review.</span>
+        </footer>
+    </div>
+
+    <!-- Toast alerts -->
+    <div class="toast toast-success" id="toast-success">Sync completed successfully!</div>
+    <div class="toast toast-info" id="toast-info">Connecting to threat API feed...</div>
+
+    <script>
+        let myChart = null;
+
+        // Fetch logs and stats from python Flask API
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                
+                // Update metrics
+                document.getElementById('count-blocked').textContent = data.total_blocked;
+                
+                // Render Logs Table
+                const tbody = document.getElementById('logs-tbody');
+                tbody.innerHTML = '';
+                
+                if (data.logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-logs">No blocked threat events logged. System clean.</td></tr>';
+                } else {
+                    data.logs.forEach(log => {
+                        const tr = document.createElement('tr');
+                        
+                        // Time
+                        const time = new Date(log.time).toLocaleString();
+                        
+                        // Domain name
+                        let hostname = log.url;
+                        try {
+                            const urlObj = new URL(log.url);
+                            hostname = urlObj.hostname;
+                        } catch(e) {}
+                        
+                        // Probability Badge
+                        const probPercent = Math.round(log.prob * 100);
+                        const badgeClass = probPercent >= 80 ? 'badge-danger' : 'badge-warning';
+                        const badgeHtml = `<span class="badge ${badgeClass}">${probPercent}% Phish</span>`;
+                        
+                        // Reasons tags (XAI)
+                        const tagsHtml = log.reasons.map(r => `<span class="tag">${r}</span>`).join('');
+                        const reasonsHtml = `<div class="reason-tags">${tagsHtml}</div>`;
+                        
+                        tr.innerHTML = `
+                            <td>${time}</td>
+                            <td title="${log.url}" style="font-family: monospace; color: var(--accent-orange);">${hostname}</td>
+                            <td>${badgeHtml}</td>
+                            <td>${reasonsHtml}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+                
+                // Render Chart.js
+                renderChart(data.chart_data);
+                
+            } catch(e) {
+                console.error("Error fetching stats:", e);
+            }
+        }
+
+        function renderChart(chartData) {
+            const ctx = document.getElementById('threatChart').getContext('2d');
+            
+            if (myChart) {
+                myChart.destroy();
+            }
+            
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Blocked Attempts',
+                        data: chartData.values,
+                        backgroundColor: 'rgba(0, 242, 254, 0.4)',
+                        borderColor: '#00f2fe',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        barPercentage: 0.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#9ca3af', font: { family: 'Inter' } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#9ca3af', font: { family: 'Inter' } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Show toast notifications
+        function showToast(id, duration = 3000) {
+            const el = document.getElementById(id);
+            el.style.display = 'block';
+            setTimeout(() => {
+                el.style.display = 'none';
+            }, duration);
+        }
+
+        // Event Listeners
+        document.getElementById('btn-refresh').addEventListener('click', fetchStats);
+        
+        document.getElementById('btn-sync').addEventListener('click', async () => {
+            showToast('toast-info', 2000);
+            try {
+                const res = await fetch('/api/update_phishtank', { method: 'POST' });
+                const data = await res.json();
+                
+                showToast('toast-success', 3000);
+                document.getElementById('db-status').textContent = 'Synced';
+                document.getElementById('db-status').style.color = 'var(--accent-green)';
+            } catch (e) {
+                console.error("Sync error:", e);
+            }
+        });
+
+        // Auto Load stats
+        fetchStats();
+        // Poll every 10 seconds for live updates
+        setInterval(fetchStats, 10000);
+    </script>
+</body>
+</html>

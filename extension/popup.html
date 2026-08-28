@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrustNet Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="popup-page">
+    <div class="glow-container">
+        <div class="glow-orb main-glow"></div>
+    </div>
+    
+    <div class="popup-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-area">
+                <svg class="shield-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 12 4 18 12 22Z" fill="url(#logo-grad)" stroke="url(#logo-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 11L11 13L15 9" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="logo-grad" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00f2fe"/>
+                            <stop offset="1" stop-color="#4facfe"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="title-sub">
+                    <h1>TrustNet</h1>
+                    <span class="version">v1.0.0</span>
+                </div>
+            </div>
+            
+            <div class="status-badge" id="status-badge">
+                <span class="pulse-indicator" id="status-pulse"></span>
+                <span class="status-text" id="status-text">Active</span>
+            </div>
+        </header>
+
+        <!-- Control Panel -->
+        <div class="card glassmorphism control-panel">
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <span class="toggle-title">Real-Time Protection</span>
+                    <span class="toggle-desc">Scan visited URLs with offline ML model</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="protection-toggle" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="toggle-row" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                <div class="toggle-info">
+                    <span class="toggle-title">Dark Theme Mode</span>
+                    <span class="toggle-desc">Toggle between dark and light styling</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="theme-toggle" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Statistics grid -->
+        <div class="stats-grid">
+            <div class="card glassmorphism stat-card">
+                <span class="stat-value" id="stat-scanned">0</span>
+                <span class="stat-label">URLs Checked</span>
+            </div>
+            <div class="card glassmorphism stat-card alert-stat">
+                <span class="stat-value" id="stat-blocked">0</span>
+                <span class="stat-label">Threats Blocked</span>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="card glassmorphism log-card">
+            <div class="card-header">
+                <h2>Activity Log</h2>
+                <button class="btn-text" id="btn-clear-logs" title="Clear statistics and whitelist">Reset Data</button>
+            </div>
+            
+            <div class="log-list-container" id="log-list">
+                <!-- Log items injected by popup.js -->
+                <div class="no-logs" id="no-logs-msg">
+                    <svg class="no-logs-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span>System is secure. No threats detected.</span>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="footer">
+            <span>Powered by Offline Decision Tree Model</span>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

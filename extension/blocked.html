@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptive Site Blocked | TrustNet</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body class="blocked-page">
+    <div class="glow-container">
+        <div class="glow-orb"></div>
+    </div>
+    
+    <div class="container">
+        <div class="card glassmorphism warning-card" id="warning-card">
+            <div class="warning-icon-container">
+                <div class="warning-icon-glow"></div>
+                <svg class="warning-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="url(#warning-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 8V12" stroke="url(#warning-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 16H12.01" stroke="url(#warning-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="warning-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#ff4e50"/>
+                            <stop offset="1" stop-color="#f9d423"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            
+            <h1 id="main-heading">Deceptive Site Ahead</h1>
+            
+            <p class="description">
+                TrustNet has blocked access to this page. Our real-time machine learning model detected suspicious features indicating this site may be trying to steal your personal or financial information.
+            </p>
+            
+            <div class="url-box" id="url-box">
+                <span class="url-label">Target URL:</span>
+                <span class="url-text" id="blocked-url">https://example.com/dangerous-page</span>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="btn-back">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Back to Safety
+                </button>
+                <button class="btn btn-secondary" id="btn-proceed">
+                    Proceed Anyway (unsafe)
+                </button>
+            </div>
+            
+            <div class="info-section">
+                <details open>
+                    <summary>Why was this site blocked?</summary>
+                    <div class="details-content">
+                        <p>Our machine learning model analyzes the lexical structures of web addresses. This site triggered warning flags based on the following specific indicators:</p>
+                        <ul id="xai-reasons">
+                            <li>Analysis in progress...</li>
+                        </ul>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+    
+    <script src="blocked.js"></script>
+</body>
+</html>
