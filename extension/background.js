@@ -1,5 +1,5 @@
-// Import the Decision Tree classifier rules
-importScripts('predict_phishing.js');
+// Import the Decision Tree classifier rules & ONNX Deep Neural Network inference engines
+importScripts('predict_phishing.js', 'onnx_neural_engine.js');
 
 // Real-time URL feature extraction logic in JavaScript
 // This must align exactly with the Python extract_features.py pipeline.
@@ -141,9 +141,12 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
     scannedCount++;
     await chrome.storage.local.set({ scannedCount });
     
-    // Extract features and run prediction
+    // Extract features and run dual ONNX Deep Neural Net & Decision Tree predictions
     const features = extractFeaturesFromUrl(url);
-    const prob = predictPhishing(features);
+    const probTree = predictPhishing(features);
+    const probNN = (typeof predictPhishingNeuralNet === 'function') ? predictPhishingNeuralNet(Object.values(features)) : probTree;
+    // Ensemble max risk probability score
+    const prob = Math.max(probTree, probNN);
     
     // If prediction threshold is met
     if (prob >= 0.50) {
